@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Forecasting</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: #1a202c;
+            margin-bottom: 0.4rem;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field.full { grid-column: span 2; }
+
+        label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        input, select {
+            padding: 0.6rem 0.8rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #2d3748;
+            transition: border-color 0.2s;
+            background: #f7fafc;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: #a0aec0;
+        }
+
+        button {
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 0.85rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #5a67d8; }
+
+        .result {
+            margin-top: 1.5rem;
+            background: #ebf8ff;
+            border: 1.5px solid #bee3f8;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .result h2 {
+            font-size: 1rem;
+            color: #2b6cb0;
+            margin-bottom: 1rem;
+        }
+
+        .prediction-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a365d;
+        }
+
+        .interval {
+            margin-top: 0.5rem;
+            font-size: 0.88rem;
+            color: #4a5568;
+        }
+
+        .error {
+            margin-top: 1.5rem;
+            background: #fff5f5;
+            border: 1.5px solid #fed7d7;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            color: #c53030;
+            font-size: 0.9rem;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1.5px solid #e2e8f0;
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📈 Sales Forecasting</h1>
+    <p class="subtitle">Enter store and date details to predict daily sales.</p>
+
+    <form method="POST">
+        <div class="grid">
+
+            <div class="field">
+                <label>Store ID</label>
+                <input type="number" name="store_id" min="1" max="5"
+                       placeholder="1 – 5" required>
+            </div>
+
+            <div class="field">
+                <label>Category</label>
+                <select name="category" required>
+                    <option value="" disabled selected>Select</option>
+                    <option>Electronics</option>
+                    <option>Clothing</option>
+                    <option>Groceries</option>
+                    <option>Furniture</option>
+                    <option>Toys</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Month</label>
+                <input type="number" name="month" min="1" max="12"
+                       placeholder="1 – 12" required>
+            </div>
+
+            <div class="field">
+                <label>Quarter</label>
+                <input type="number" name="quarter" min="1" max="4"
+                       placeholder="1 – 4" required>
+            </div>
+
+            <div class="field">
+                <label>Day of Week</label>
+                <input type="number" name="day_of_week" min="0" max="6"
+                       placeholder="0=Mon, 6=Sun" required>
+                <span class="hint">0 = Monday, 6 = Sunday</span>
+            </div>
+
+            <div class="field">
+                <label>Promotion</label>
+                <select name="promotion" required>
+                    <option value="" disabled selected>Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Holiday</label>
+                <select name="holiday" required>
+                    <option value="" disabled selected>Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Weekend</label>
+                <select name="weekend" required>
+                    <option value="" disabled selected>Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+
+            <hr class="divider full">
+
+            <div class="field">
+                <label>Lag 7 (sales 7d ago)</label>
+                <input type="number" step="0.01" name="lag_7"
+                       placeholder="e.g. 850.00" required>
+            </div>
+
+            <div class="field">
+                <label>Lag 30 (sales 30d ago)</label>
+                <input type="number" step="0.01" name="lag_30"
+                       placeholder="e.g. 800.00" required>
+            </div>
+
+            <div class="field">
+                <label>Rolling Avg 7d</label>
+                <input type="number" step="0.01" name="rolling_7"
+                       placeholder="e.g. 820.00" required>
+            </div>
+
+            <div class="field">
+                <label>Rolling Avg 30d</label>
+                <input type="number" step="0.01" name="rolling_30"
+                       placeholder="e.g. 810.00" required>
+            </div>
+
+        </div>
+
+        <button type="submit">🔮 Predict Sales</button>
+    </form>
+
+    {% if error %}
+    <div class="error">⚠️ {{ error }}</div>
+    {% endif %}
+
+    {% if result %}
+    <div class="result">
+        <h2>🎯 Predicted Daily Sales</h2>
+        <div class="prediction-value">{{ "{:,.2f}".format(result.prediction) }}</div>
+        <div class="interval">
+            Confidence interval: {{ "{:,.2f}".format(result.lower_bound) }}
+            – {{ "{:,.2f}".format(result.upper_bound) }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
